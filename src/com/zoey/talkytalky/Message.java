@@ -3,7 +3,7 @@ package com.zoey.talkytalky;
 public class Message{
 	ServerSocket s = new ServerSocket();
 	private String from;
-	//private String to;
+	private String to;
 	private String content;
 	
 	public String toString(){
@@ -14,9 +14,9 @@ public class Message{
 		return from;
 	}
 	
-//	public String getTo(){
-//		return to;
-//	}
+	public String getTo(){
+		return to;
+	}
 	
 	public String getContent(){
 		return content;
@@ -26,10 +26,10 @@ public class Message{
 		this.from = from;
 	}
 	
-//	public void setTo(String to){
-//		this.to = to;
-//	}
-//	
+	public void setTo(String to){
+		this.to = to;
+	}
+	
 	public void setContent(String content){
 		this.content = content;
 	}

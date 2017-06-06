@@ -21,11 +21,12 @@ import javax.websocket.server.ServerEndpoint;
 @ServerEndpoint(value="/chat/{username}", decoders = {AppDecoder.class}, encoders = {AppEncoder.class})
 public class ServerSocket {
 	private Session session;
-	private String username;
+	private static String username;
 	private String password;
 	private static final Set<ServerSocket> endpoints = new CopyOnWriteArraySet<>();
 	private static Hashtable<String, String> userlist = new Hashtable<>();
 	private static final Set<String> online = new HashSet<String>();
+	private static final Set<String> offline = new HashSet<String>();
 	private static final Set<String> history = new HashSet<String>(); // change it to hashtable for username and message
 	
 	public String getUsername(){
@@ -57,6 +58,7 @@ public class ServerSocket {
 	       endpoints.add(this);
 	       userlist.put(session.getId(), username);
 	       online.add(username);
+	       offline.remove(username);
 	       for(ServerSocket pt : endpoints){
 				synchronized(pt){
 					try {
@@ -70,21 +72,62 @@ public class ServerSocket {
 				}
 			} 
 	}
-	
-	
 	@OnMessage
 	public void handleMessage(Session session, String msg){
-		history.add(msg);
-		for(ServerSocket pt : endpoints){
-			synchronized(pt){
-				try {
-					if(!pt.session.equals(session.getOpenSessions()))
-						pt.session.getBasicRemote().sendText(msg);
-				} catch (IOException e) {
-					e.printStackTrace();
+		int i=0;
+		String to="";
+		String send="";
+		if(msg.contains("/to ")){
+			for(int j=0; j<msg.length()-1; ++j){
+				if(msg.charAt(j)=='/')
+				{
+					i=j;
+					break;
+				}
+			}
+			i+=4;
+			while(msg.charAt(i)!= ':')
+			{
+				to+=msg.charAt(i);
+				++i;
+			}
+			++i;
+			while(msg.charAt(i)!='('){
+				send+=msg.charAt(i);
+				++i;
+			}
+			String to_id = null;
+			 for (String sessionId: userlist.keySet()) {
+	                if (userlist.get(sessionId).equals(to)) {
+	                    to_id= sessionId;
+	                    break;
+	                }
+	            }
+			
+				for(ServerSocket pt2: endpoints){
+					try {
+						if(pt2.session.getId().equals(to_id) || pt2.session.equals(session))
+							pt2.session.getBasicRemote().sendText("/from "+username+" to "+to+":"+send+"\n");
+						
+					} catch (IOException e) {
+						e.getCause();
+					}
+				}
+			
+		}else {
+			for(ServerSocket pt : endpoints){
+				synchronized(pt){
+					try {
+						if(!pt.session.equals(session.getOpenSessions()))
+							pt.session.getBasicRemote().sendText(msg);
+					} catch (IOException e) {
+						e.getCause();
+					}
 				}
 			}
 		}
+		 
+	
 		/*
 		if(this.session.getId().equals(session.getId())){
 		try {
@@ -111,6 +154,7 @@ public class ServerSocket {
 	    this.session = session;
 		endpoints.remove(this);
 		online.remove(username);
+		offline.add(username);
 		for(ServerSocket pt : endpoints){
 			synchronized(pt){
 				try {
@@ -144,11 +188,22 @@ public class ServerSocket {
 	  private String getOnlineUsersList() {
 		  
 		  String usersList = new String();
+		  String usersList2 = new String();
 		  Set<String> keys = online;
 		  Iterator<String> itr = keys.iterator();
+		  Set<String> keys2 = offline;
+		  Iterator<String> itr2 = keys2.iterator();
 		  
 		  for(ServerSocket pt : endpoints){
 				synchronized(pt){
+					while(itr2.hasNext()){
+						String iUser2 = itr2.next();
+						if(usersList2.toLowerCase().contains(iUser2.toLowerCase())){
+							  continue;
+						  }else{
+							  usersList2 += iUser2+" | ";
+						  }
+					}
 					if(!pt.session.equals(session.getOpenSessions())){
 						  while(itr.hasNext()){
 								String iUser = itr.next();
@@ -158,36 +213,11 @@ public class ServerSocket {
 									  usersList += iUser+" | ";
 								  }
 							}
-						  }
+					}
 				}
 			} 
 		  usersList = "\t\t\t >> ONLINE USERS : "+usersList+"\n";
+		  usersList += "\t\t\t >> OFFLINE USERS : "+usersList2+"\n";
 		  return usersList;
 	  }
-	  
-//	    private static void sendMessageToOneUser(Message message) {
-//	        for (ServerSocket endpoint : endpoints) {
-//	            synchronized(endpoint) {
-//	                if (endpoint.session.getId().equals(getSessionId(message.getTo()))) {
-//	                    try {
-//							endpoint.session.getBasicRemote().sendObject(message);
-//						} catch (IOException | EncodeException e) {
-//							e.getCause();
-//						}
-//	                }
-//	            }
-//	        }
-//	    }
-
-	    private static String getSessionId(String to) {
-	        if (userlist.containsValue(to)) {
-	            for (String sessionId: userlist.keySet()) {
-	                if (userlist.get(sessionId).equals(to)) {
-	                    return sessionId;
-	                }
-	            }
-	        }
-	        return null;
-	    }
-
 }

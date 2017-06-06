@@ -7,6 +7,7 @@
             <tr>
                 <td colspan="2">
                     <form action="./login.jsp">
+                    <b id="online"></b><b>'s chat room</b>
 						<input type="submit" value="logout" />
 					</form>
                 </td>
@@ -18,8 +19,7 @@
             </tr>
             <tr>
                 <td>
-                	<textarea readonly="true" rows="1" cols="5" id="online" style="resize:none"></textarea>
-                    <textarea rows="1" cols="50" id="msg" placeholder="Enter message here" style="resize:none"></textarea>
+                    <textarea rows="1" cols="75" id="msg" placeholder="Enter message here" style="resize:none"></textarea>
                    	<input type="button" onclick="send();" value="Send"/>
                 </td>
             </tr>
