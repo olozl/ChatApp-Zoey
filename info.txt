@@ -1,0 +1,9 @@
+http://192.168.0.6:1992/ChatApp/
+IPv4 	10.200.44.147 ------- 131.252.55.192
+
+//ping 2601:1c0:7001:1b50:fcdd:941e:bcc1:3ba2
+telnet 
+
+local ip address
+
+fe80::fcdd:941e:bcc1:3ba2%4
