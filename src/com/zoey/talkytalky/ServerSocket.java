@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
 
@@ -21,7 +22,7 @@ import javax.websocket.server.ServerEndpoint;
 @ServerEndpoint(value="/chat/{username}", decoders = {AppDecoder.class}, encoders = {AppEncoder.class})
 public class ServerSocket {
 	private Session session;
-	private static String username;
+	private String username;
 	private String password;
 	private static final Set<ServerSocket> endpoints = new CopyOnWriteArraySet<>();
 	private static Hashtable<String, String> userlist = new Hashtable<>();
@@ -75,6 +76,7 @@ public class ServerSocket {
 	@OnMessage
 	public void handleMessage(Session session, String msg){
 		int i=0;
+		String from="";
 		String to="";
 		String send="";
 		if(msg.contains("/to ")){
@@ -97,23 +99,25 @@ public class ServerSocket {
 				++i;
 			}
 			String to_id = null;
-			 for (String sessionId: userlist.keySet()) {
-	                if (userlist.get(sessionId).equals(to)) {
-	                    to_id= sessionId;
-	                    break;
-	                }
+			for (String sessionId: userlist.keySet()) {
+				if (userlist.get(sessionId).equals(to)) {
+                    to_id= sessionId;
+                    break;
 	            }
-			
-				for(ServerSocket pt2: endpoints){
-					try {
-						if(pt2.session.getId().equals(to_id) || pt2.session.equals(session))
-							pt2.session.getBasicRemote().sendText("/from "+username+" to "+to+":"+send+"\n");
-						
-					} catch (IOException e) {
-						e.getCause();
+	        }
+			for(Map.Entry<String, String> s: userlist.entrySet()){
+				if(s.getKey()==session.getId())
+					from = s.getValue();
+			}
+			for(ServerSocket pt2: endpoints){
+				try {
+					if(pt2.session.getId().equals(to_id) || pt2.session.equals(session)){
+						pt2.session.getBasicRemote().sendText("/from "+from+" to "+to+":"+send+"\n");
 					}
+				} catch (IOException e) {
+					e.getCause();
 				}
-			
+			}
 		}else {
 			for(ServerSocket pt : endpoints){
 				synchronized(pt){
@@ -133,7 +137,6 @@ public class ServerSocket {
 		try {
 			session.getBasicRemote().sendText(getHistory());
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}}
 		*/
@@ -153,8 +156,8 @@ public class ServerSocket {
 	public void handleClose(Session session, CloseReason reason) {
 	    this.session = session;
 		endpoints.remove(this);
-		online.remove(username);
-		offline.add(username);
+		online.remove(this.username);
+		offline.add(this.username);
 		for(ServerSocket pt : endpoints){
 			synchronized(pt){
 				try {
