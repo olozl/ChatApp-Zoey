@@ -28,7 +28,6 @@ public class ServerSocket {
 	private static Hashtable<String, String> userlist = new Hashtable<>();
 	private static final Set<String> online = new HashSet<String>();
 	private static final Set<String> offline = new HashSet<String>();
-	private static final Set<String> history = new HashSet<String>(); // change it to hashtable for username and message
 	
 	public String getUsername(){
 		return username;
@@ -173,21 +172,21 @@ public class ServerSocket {
 		} 
 	}
 	
-	private String getHistory() {
-		String historyList = new String();
-		Set<String> keys = history;
-		Iterator<String> itr = keys.iterator();
-		
-		while(itr.hasNext()){
-			String iUser = itr.next();
-			if(historyList.toLowerCase().contains(iUser.toLowerCase())){
-				continue;
-			}else{
-				historyList += iUser+" \n ";
-			}
-		}
-		return historyList;
-	}
+//	private String getHistory() {
+//		String historyList = new String();
+//		Set<String> keys = history;
+//		Iterator<String> itr = keys.iterator();
+//		
+//		while(itr.hasNext()){
+//			String iUser = itr.next();
+//			if(historyList.toLowerCase().contains(iUser.toLowerCase())){
+//				continue;
+//			}else{
+//				historyList += iUser+" \n ";
+//			}
+//		}
+//		return historyList;
+//	}
 	  private String getOnlineUsersList() {
 		  
 		  String usersList = new String();

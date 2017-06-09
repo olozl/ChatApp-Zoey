@@ -18,17 +18,6 @@ public class AppEncoder implements Encoder.Text<Message> {
 	public void init(EndpointConfig arg0) {}
 
 	public String encode(Message msg) throws EncodeException {
-//		JAXBContext jax = null;
-//		StringWriter st = null;
-//		try{
-//			jax = JAXBContext.newInstance(Message.class);
-//			Marshaller ma = jax.createMarshaller();
-//			st = new StringWriter();
-//			ma.marshal(msg, st);
-//		} catch(Exception e){
-//			e.printStackTrace();
-//		}
-//		return st.toString();
 		return Json.createObjectBuilder().add("content", msg.getContent()).build().toString();
 	}
 
